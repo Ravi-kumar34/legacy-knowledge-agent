@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LegacyMind AI</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="chat-container">
+        <h1>LegacyMind AI 🧠</h1>
+        <div class="status-bar">Status: <span id="conn-status">Working in Silo (Mock Data)</span></div>
+        <div id="chat-box">
+            <div class="message system">Welcome to LegacyMind AI. How can I help you find past decisions?</div>
+        </div>
+        <div class="input-area">
+            <input type="text" id="query-input" placeholder="e.g. How do I fix Database Error 405?">
+            <button onclick="sendQuery()">Ask Hindsight</button>
+        </div>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>

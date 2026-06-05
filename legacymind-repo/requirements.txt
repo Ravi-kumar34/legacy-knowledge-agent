@@ -1,0 +1,11 @@
+fastapi
+uvicorn[standard]
+pydantic>=2.0.0
+pydantic-settings
+google-antigravity
+PyJWT
+passlib[bcrypt]
+python-dotenv
+pytest
+httpx
+pytest-asyncio
