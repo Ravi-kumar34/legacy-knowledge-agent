@@ -1,0 +1,28 @@
+# Web Framework & Server
+fastapi
+uvicorn[standard]
+python-multipart
+
+# Database Architecture
+sqlalchemy
+pymysql
+cryptography
+
+# Security & Authentication
+PyJWT
+passlib[bcrypt]
+bcrypt==3.2.2
+
+# Configuration & Validation
+pydantic>=2.0.0
+pydantic-settings
+email-validator
+python-dotenv
+
+# AI Agent SDK
+google-antigravity
+
+# Testing Suite
+pytest
+httpx
+pytest-asyncio
