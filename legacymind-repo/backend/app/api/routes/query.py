@@ -26,8 +26,9 @@ async def search_hindsight(query: str) -> str:
     if not HINDSIGHT_API_KEY:
         return "No Hindsight API Key available to retrieve historical context."
     
-    base_url = (HINDSIGHT_ENDPOINT or "https://api.hindsight.com").rstrip('/')
-    hindsight_url = f"{base_url}/collections/legacy-knowledge/search"
+    # Clean up endpoint URL just in case there are trailing slashes
+    base_url = (HINDSIGHT_ENDPOINT or "https://api.hindsight.vectorize.io").rstrip('/')
+    hindsight_url = f"{base_url}/collections/legacy-knowledge/query"
     
     headers = {
         "Authorization": f"Bearer {HINDSIGHT_API_KEY}",
@@ -53,10 +54,23 @@ async def search_hindsight(query: str) -> str:
             return context
     except Exception as e:
         print(f"Hindsight API search failed: {e}. Falling back to mock data.")
+        import json
+        import os
+        db_path = "mock_vector_db.json"
+        local_context = ""
+        try:
+            if os.path.exists(db_path):
+                with open(db_path, "r") as f:
+                    data = json.load(f)
+                for idx, item in enumerate(data):
+                    local_context += f"Document {idx + 3}: {item['content']}\n"
+        except Exception:
+            pass
+
         return (
             "Document 1: On May 10th, Rahul resolved Database Error 405 by clearing the Redis cache to drop zombie sessions.\n"
-            "Document 2: The auth API uses passlib and bcrypt for hashing passwords."
-        )
+            "Document 2: The auth API uses passlib and bcrypt for hashing passwords.\n"
+        ) + local_context
 
 @router.post("")
 async def process_query(request: QueryRequest):
