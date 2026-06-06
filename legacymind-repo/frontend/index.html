@@ -13,7 +13,109 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="console-wrapper">
+
+    <!-- 1. AUTHENTICATION GATEWAY OVERLAY -->
+    <div id="auth-overlay" class="auth-overlay">
+        <!-- Default: Employee Login Form -->
+        <div class="auth-card" id="employee-login-card">
+            <div class="terminal-window-header">
+                <div class="terminal-dots">
+                    <span class="dot red"></span>
+                    <span class="dot yellow"></span>
+                    <span class="dot green"></span>
+                </div>
+                <span class="terminal-title">legacymind@enterprise: auth-gate</span>
+            </div>
+            
+            <div class="auth-card-body">
+                <div class="auth-logo">
+                    <i class="fa-solid fa-terminal auth-icon"></i>
+                    <h2>LEGACYMIND AI</h2>
+                    <p class="auth-subtitle">Enterprise Organizational Memory System</p>
+                    <p class="auth-tagline">"Knowledge survives employee turnover."</p>
+                </div>
+
+                <div class="auth-form">
+                    <div class="form-group">
+                        <label for="emp-email">Employee Email</label>
+                        <input type="email" id="emp-email" placeholder="name@enterprise.com" value="engineer@enterprise.com">
+                    </div>
+                    <div class="form-group">
+                        <label for="emp-password">Password</label>
+                        <input type="password" id="emp-password" placeholder="••••••••" value="password123">
+                    </div>
+                    <button class="btn-auth-submit" onclick="attemptLogin('employee')">
+                        [ LOGIN TO MEMORY ENGINE ]
+                    </button>
+                </div>
+
+                <div id="auth-error-msg" class="auth-error-block" style="display: none;">
+                    <i class="fa-solid fa-triangle-exclamation"></i> <span id="error-text">Credentials invalid.</span>
+                </div>
+
+                <!-- Rich terminal boot/status block in login card -->
+                <div class="auth-boot-terminal">
+                    <div class="boot-line"><span class="boot-label">SYSTEM STATUS:</span> <span class="text-success font-bold">ONLINE</span></div>
+                    <div class="boot-line"><span class="boot-label">MEMORIES INDEXED:</span> <span id="login-memories-stat" class="text-blue">12,482</span></div>
+                    <div class="boot-line"><span class="boot-label">INCIDENTS TRACKED:</span> <span class="text-blue">483</span></div>
+                    <div class="boot-line"><span class="boot-label">KNOWLEDGE GRAPH:</span> <span class="text-success font-bold">HEALTHY</span></div>
+                </div>
+
+                <div class="admin-access-link-container">
+                    <button class="btn-link-secondary" onclick="showAdminModal(true)">
+                        Administrator Access
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pop-up Modal: Admin Authorization Terminal -->
+        <div class="auth-card modal-popup" id="admin-login-modal" style="display: none;">
+            <div class="terminal-window-header">
+                <div class="terminal-dots">
+                    <span class="dot red" onclick="showAdminModal(false)" style="cursor: pointer;"></span>
+                    <span class="dot yellow"></span>
+                    <span class="dot green"></span>
+                </div>
+                <span class="terminal-title">legacymind@enterprise: admin-gate</span>
+            </div>
+            
+            <div class="auth-card-body">
+                <div class="auth-logo">
+                    <i class="fa-solid fa-user-gear auth-icon" style="color: var(--accent-blue-light);"></i>
+                    <h2>ADMIN AUTHORIZATION TERMINAL</h2>
+                    <p class="auth-subtitle">Elevated Credentials Verification</p>
+                </div>
+
+                <div class="auth-form">
+                    <div class="form-group">
+                        <label for="admin-id">Admin ID</label>
+                        <input type="text" id="admin-id" placeholder="ADM-9021" value="admin-corp">
+                    </div>
+                    <div class="form-group">
+                        <label for="admin-password">Password</label>
+                        <input type="password" id="admin-password" placeholder="••••••••" value="adminpass">
+                    </div>
+                    <button class="btn-auth-submit" onclick="attemptLogin('admin')">
+                        [ ENTER ADMIN CONSOLE ]
+                    </button>
+                </div>
+
+                <div id="admin-auth-error-msg" class="auth-error-block" style="display: none;">
+                    <i class="fa-solid fa-triangle-exclamation"></i> <span id="admin-error-text">Admin passkey invalid.</span>
+                </div>
+
+                <div class="admin-access-link-container">
+                    <button class="btn-link-secondary" onclick="showAdminModal(false)">
+                        Cancel Authorization
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. MAIN APPLICATION CONSOLE CONTENT -->
+    <div id="app-content" class="console-wrapper" style="display: none;">
         <!-- TOP HEADER -->
         <header class="top-header">
             <div class="header-left">
@@ -27,13 +129,17 @@
             </div>
             
             <div class="header-right">
+                <div class="session-badge">
+                    <span class="session-label">ACCESS ROLE</span>
+                    <span class="session-val" id="session-role-badge">EMPLOYEE</span>
+                </div>
                 <div class="stat-badge">
                     <span class="stat-label">MEMORIES INDEXED</span>
-                    <span class="stat-val">12,482</span>
+                    <span class="stat-val" id="header-memories-count">12,482</span>
                 </div>
                 <div class="stat-badge">
                     <span class="stat-label">INCIDENTS TRACKED</span>
-                    <span class="stat-val" id="incident-count">483</span>
+                    <span class="stat-val">483</span>
                 </div>
                 <div class="stat-badge">
                     <span class="stat-label">KNOWLEDGE GRAPH</span>
@@ -43,64 +149,57 @@
                     <span class="status-dot"></span>
                     <span id="conn-status" class="status-text">ONLINE</span>
                 </div>
+                <button class="btn-logout" onclick="logout()" title="Logout Secure Session">
+                    <i class="fa-solid fa-power-off"></i>
+                </button>
             </div>
         </header>
 
         <!-- MAIN LAYOUT GRID -->
         <main class="console-grid">
             
-            <!-- LEFT COLUMN: COMMAND PANEL & MODE COMPARE -->
+            <!-- LEFT COLUMN: LARGE COMMAND CONSOLE & INGESTION PORTAL (75-80% WIDTH) -->
             <section class="console-left-column">
                 
-                <!-- MODE COMPARISON SELECTOR -->
-                <div class="panel mode-selector-panel">
-                    <div class="panel-header-simple">
-                        <span class="panel-tag">MODE CONFIGURATION</span>
+                <!-- HINDSIGHT STATE ACTIVE BANNER -->
+                <div class="hindsight-active-banner">
+                    <div class="banner-title">
+                        <span class="pulse-ring"></span>
+                        <i class="fa-solid fa-brain"></i> HINDSIGHT MEMORY ACTIVE
                     </div>
-                    <div class="mode-options">
-                        <button class="mode-btn" id="mode-goldfish" onclick="selectMode('goldfish')">
-                            <span class="radio-dot"></span>
-                            <span class="mode-name">Goldfish</span>
-                            <span class="mode-desc">0-shot (No memory)</span>
-                        </button>
-                        <button class="mode-btn" id="mode-rag" onclick="selectMode('rag')">
-                            <span class="radio-dot"></span>
-                            <span class="mode-name">Basic RAG</span>
-                            <span class="mode-desc">Vector Search Only</span>
-                        </button>
-                        <button class="mode-btn active" id="mode-hindsight" onclick="selectMode('hindsight')">
-                            <span class="radio-dot"></span>
-                            <span class="mode-name">Hindsight</span>
-                            <span class="mode-desc">Full Causal Recall</span>
-                        </button>
-                    </div>
-                    <div class="mode-explanation" id="mode-explanation-text">
-                        Deep Hindsight Engine active. Reconstructs multi-month causal chains and links historical decisions to current incidents.
+                    <div class="banner-body">
+                        <span class="badge-hindsight">ENGINE L3</span>
+                        <p>Enterprise Organizational Memory Engine Enabled. Historical incident correlation and causal recall active.</p>
                     </div>
                 </div>
 
-                <!-- MAIN TERMINAL WINDOW -->
-                <div class="panel terminal-panel">
+                <!-- NAVIGATION BUTTONS FOR SEARCH VS SUBMISSION -->
+                <div class="action-nav-bar">
+                    <button id="btn-nav-search" class="nav-action-btn active" onclick="switchMainView('search')">
+                        <i class="fa-solid fa-magnifying-glass"></i> Search Memory
+                    </button>
+                    <button id="btn-nav-add" class="nav-action-btn" onclick="switchMainView('add')">
+                        <i class="fa-solid fa-plus-circle"></i> Add Organizational Memory
+                    </button>
+                </div>
+
+                <!-- VIEW A: TERMINAL SEARCH CONSOLE -->
+                <div id="terminal-search-view" class="panel terminal-panel">
                     <div class="terminal-window-header">
                         <div class="terminal-dots">
                             <span class="dot red"></span>
                             <span class="dot yellow"></span>
                             <span class="dot green"></span>
                         </div>
-                        <span class="terminal-title">legacymind@enterprise: ~</span>
-                        <div class="terminal-actions">
-                            <i class="fa-solid fa-expand"></i>
-                        </div>
+                        <span class="terminal-title">legacymind@enterprise: ~ / search</span>
                     </div>
                     
-                    <!-- CONSOLE CHAT HISTORY CONTAINER -->
                     <div id="chat-box" class="terminal-body">
                         <div class="message system">Welcome to LegacyMind Enterprise Organizational Memory Console.
 System status: ONLINE. Hindsight engine initialized.
 Type a command or click an example below to begin query.</div>
                     </div>
 
-                    <!-- TERMINAL INPUT LINE -->
                     <div class="terminal-input-bar">
                         <span class="terminal-prompt-symbol">legacymind@enterprise:~$</span>
                         <input type="text" id="query-input" placeholder="Enter memory query command..." autofocus autocomplete="off">
@@ -110,8 +209,109 @@ Type a command or click an example below to begin query.</div>
                     </div>
                 </div>
 
+                <!-- VIEW B: KNOWLEDGE INGESTION PORTAL -->
+                <div id="terminal-ingest-view" class="panel terminal-panel" style="display: none;">
+                    <div class="terminal-window-header">
+                        <div class="terminal-dots">
+                            <span class="dot red"></span>
+                            <span class="dot yellow"></span>
+                            <span class="dot green"></span>
+                        </div>
+                        <span class="terminal-title">legacymind@enterprise: ~ / ingest-portal</span>
+                    </div>
+                    
+                    <div class="terminal-body ingest-body code-font">
+                        
+                        <!-- 1. Inline Auth Gate: Identity Verification Required -->
+                        <div id="ingest-auth-gate" style="display: none;">
+                            <div class="ingest-banner-text">
+================================================<br>
+&nbsp;&nbsp;&nbsp;&nbsp;KNOWLEDGE INGESTION TERMINAL<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Identity Verification Required<br>
+================================================
+                            </div>
+                            <div class="ingest-fields-container">
+                                <div class="ingest-field-row">
+                                    <span class="ingest-field-label">Employee ID</span>
+                                    <input type="text" id="ingest-emp-id" placeholder="EMP-Rahul" value="EMP-Rahul">
+                                </div>
+                                <div class="ingest-field-row">
+                                    <span class="ingest-field-label">Password</span>
+                                    <input type="password" id="ingest-password" placeholder="••••••••" value="rahulsecrethash">
+                                </div>
+                                <button class="btn-ingest-action" onclick="authenticateIngest()">
+                                    [ VERIFY ]
+                                </button>
+                            </div>
+                            <div id="ingest-auth-error" class="ingest-error-text" style="display: none;">
+                                [!] Verification failed: Employee ID or password incorrect.
+                            </div>
+                        </div>
+
+                        <!-- 2. Submission Form -->
+                        <div id="ingest-submit-form" style="display: none;">
+                            <div class="ingest-banner-text">
+================================================<br>
+&nbsp;&nbsp;ORGANIZATIONAL KNOWLEDGE SUBMISSION<br>
+================================================
+                            </div>
+                            
+                            <div class="ingest-meta-container">
+                                <div class="ingest-meta-line">
+                                    <span class="meta-label">Contributor:</span>
+                                    <span class="meta-value">Rahul Sharma</span>
+                                </div>
+                                <div class="ingest-meta-line">
+                                    <span class="meta-label">Email:</span>
+                                    <span class="meta-value"><a href="mailto:rahul@company.com" style="color: var(--accent-blue-light)">rahul@company.com</a></span>
+                                </div>
+                            </div>
+
+                            <div class="ingest-fields-container form-grid">
+                                <div class="ingest-field-row">
+                                    <span class="ingest-field-label">Knowledge Title:</span>
+                                    <input type="text" id="ingest-title" placeholder="Redis Cache Failure Resolution" value="Redis Cache Failure Resolution">
+                                </div>
+                                <div class="ingest-field-row">
+                                    <span class="ingest-field-label">Knowledge Entry:</span>
+                                    <textarea id="ingest-entry" placeholder="Detailed description of knowledge learnings..."></textarea>
+                                </div>
+                                <div class="ingest-field-row">
+                                    <span class="ingest-field-label">Root Cause:</span>
+                                    <textarea id="ingest-root-cause" placeholder="Root cause breakdown..."></textarea>
+                                </div>
+                                <div class="ingest-field-row">
+                                    <span class="ingest-field-label">Recommended Action:</span>
+                                    <textarea id="ingest-action" placeholder="Recommended steps for remediation..."></textarea>
+                                </div>
+                                <button class="btn-ingest-action" onclick="submitToMemoryEngine()">
+                                    [ Submit To Memory Engine ]
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- 3. Animated Feedback Checks -->
+                        <div id="ingest-feedback-logs" style="display: none;">
+                            <div class="ingest-banner-text">
+================================================<br>
+&nbsp;&nbsp;&nbsp;&nbsp;PROCESSING KNOWLEDGE SUBMISSION<br>
+================================================
+                            </div>
+                            <div class="feedback-checklist" id="feedback-checklist-container">
+                                <!-- checklist lines -->
+                            </div>
+                            <div class="feedback-actions" id="feedback-success-actions" style="display: none; margin-top: 20px;">
+                                <button class="btn-ingest-action" onclick="switchMainView('search')">
+                                    [ Return To Search Console ]
+                                </button>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
                 <!-- EXAMPLE COMMANDS PANEL -->
-                <div class="panel examples-panel">
+                <div id="examples-nav-panel" class="panel examples-panel">
                     <div class="panel-header-simple">
                         <span class="panel-tag">AVAILABLE COMMAND TEMPLATES</span>
                     </div>
@@ -133,13 +333,23 @@ Type a command or click an example below to begin query.</div>
 
             </section>
 
-            <!-- RIGHT COLUMN: DIAGNOSTIC & TIMELINE PANELS -->
+            <!-- RIGHT COLUMN: DIAGNOSTIC & TIMELINE PANELS (20-25% WIDTH - COMPACT) -->
             <section class="console-right-column">
                 
-                <!-- TOOL EXECUTION PANEL -->
-                <div class="panel tool-execution-panel">
+                <!-- THINKING LOG PANEL (RETAINED) -->
+                <div class="panel thinking-log-panel compact-panel">
                     <div class="panel-header">
-                        <span class="panel-title-text"><i class="fa-solid fa-gears icon-blue"></i> Tool Execution Pipeline</span>
+                        <span class="panel-title-text"><i class="fa-solid fa-microchip icon-blue"></i> Thinking Log Panel</span>
+                    </div>
+                    <div class="panel-body-content log-container code-font" id="thinking-logs">
+                        <div class="log-placeholder">> Console standby. Query routing logs will stream here...</div>
+                    </div>
+                </div>
+
+                <!-- TOOL EXECUTION PANEL -->
+                <div class="panel tool-execution-panel compact-panel">
+                    <div class="panel-header">
+                        <span class="panel-title-text"><i class="fa-solid fa-gears icon-blue"></i> Tool Pipeline</span>
                         <span class="panel-header-status" id="pipeline-status">Idle</span>
                     </div>
                     <div class="panel-body-content">
@@ -169,33 +379,23 @@ Type a command or click an example below to begin query.</div>
                 </div>
 
                 <!-- MEMORY STATUS FEED -->
-                <div class="panel status-feed-panel">
+                <div class="panel status-feed-panel compact-panel">
                     <div class="panel-header">
-                        <span class="panel-title-text"><i class="fa-solid fa-database icon-blue"></i> Memory Status Feed</span>
+                        <span class="panel-title-text"><i class="fa-solid fa-database icon-blue"></i> Status Feed</span>
                     </div>
                     <div class="panel-body-content log-container" id="status-feed-logs">
-                        <div class="log-placeholder">Pipeline inactive. Waiting for command execution...</div>
-                    </div>
-                </div>
-
-                <!-- THINKING LOG PANEL -->
-                <div class="panel thinking-log-panel">
-                    <div class="panel-header">
-                        <span class="panel-title-text"><i class="fa-solid fa-microchip icon-blue"></i> Thinking Log Panel</span>
-                    </div>
-                    <div class="panel-body-content log-container code-font" id="thinking-logs">
-                        <div class="log-placeholder">> Console standby. Query routing logs will stream here...</div>
+                        <div class="log-placeholder">Waiting for execution...</div>
                     </div>
                 </div>
 
                 <!-- MEMORY TIMELINE PANEL -->
-                <div class="panel timeline-panel">
+                <div class="panel timeline-panel compact-panel">
                     <div class="panel-header">
-                        <span class="panel-title-text"><i class="fa-solid fa-clock-rotate-left icon-blue"></i> Memory Timeline Panel</span>
+                        <span class="panel-title-text"><i class="fa-solid fa-clock-rotate-left icon-blue"></i> Memory Timeline</span>
                     </div>
                     <div class="panel-body-content">
                         <div class="timeline-flow" id="memory-timeline">
-                            <div class="timeline-placeholder">No causal timeline loaded for current query context.</div>
+                            <div class="timeline-placeholder">No timeline loaded.</div>
                         </div>
                     </div>
                 </div>
@@ -204,6 +404,112 @@ Type a command or click an example below to begin query.</div>
 
         </main>
     </div>
+
+    <!-- 3. ADMINISTRATIVE ENTERPRISE DASHBOARD -->
+    <div id="admin-dashboard" class="console-wrapper" style="display: none;">
+        <!-- TOP HEADER -->
+        <header class="top-header">
+            <div class="header-left">
+                <div class="logo-container">
+                    <i class="fa-solid fa-terminal logo-icon"></i>
+                    <div class="logo-text">
+                        <h1>LEGACYMIND AI</h1>
+                        <span class="logo-subtitle">Administrative Control Portal</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="header-right">
+                <div class="status-indicator">
+                    <span class="status-dot"></span>
+                    <span class="status-text" style="color: var(--accent-blue-light);">SECURE CONSOLE</span>
+                </div>
+                <button class="btn-logout" onclick="logout()" title="Logout Session">
+                    <i class="fa-solid fa-power-off"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- DASHBOARD GRID -->
+        <main class="admin-grid">
+            <!-- LEFT COLUMN: STATS AND ACTIVE CONTRIBUTORS -->
+            <section class="admin-left-col">
+                <!-- SYSTEM STATUS -->
+                <div class="panel admin-stats-panel">
+                    <div class="panel-header-simple">
+                        <span class="panel-tag">ENTERPRISE SYSTEM STATS</span>
+                    </div>
+                    <div class="admin-stats-grid">
+                        <div class="admin-stat-card">
+                            <span class="admin-stat-label">CONTRIBUTORS ACTIVE</span>
+                            <span class="admin-stat-val">3</span>
+                        </div>
+                        <div class="admin-stat-card">
+                            <span class="admin-stat-label">TOTAL MEMORIES</span>
+                            <span class="admin-stat-val" id="admin-memories-count">12,482</span>
+                        </div>
+                        <div class="admin-stat-card">
+                            <span class="admin-stat-label">PENDING APPROVALS</span>
+                            <span class="admin-stat-val" id="admin-pending-count">0</span>
+                        </div>
+                        <div class="admin-stat-card">
+                            <span class="admin-stat-label">GRAPH INTEGRITY</span>
+                            <span class="admin-stat-val text-success">SYNCED</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CONTRIBUTOR DIRECTORY -->
+                <div class="panel admin-employee-panel">
+                    <div class="panel-header">
+                        <span class="panel-title-text"><i class="fa-solid fa-users icon-blue"></i> Authorized System Contributors</span>
+                    </div>
+                    <div class="panel-body-content">
+                        <div class="directory-list-container" style="max-height: 100%;">
+                            <div class="directory-list">
+                                <div class="directory-item">
+                                    <div class="emp-info">
+                                        <span class="emp-name">Rahul Sharma</span>
+                                        <span class="emp-meta">rahul@company.com • <strong>Lead SRE</strong></span>
+                                    </div>
+                                    <span class="badge-role-pill contr">SME</span>
+                                </div>
+                                <div class="directory-item">
+                                    <div class="emp-info">
+                                        <span class="emp-name">Priya Patel</span>
+                                        <span class="emp-meta">priya@company.com • <strong>DevOps Lead</strong></span>
+                                    </div>
+                                    <span class="badge-role-pill contr">SME</span>
+                                </div>
+                                <div class="directory-item">
+                                    <div class="emp-info">
+                                        <span class="emp-name">Sanjay Kumar</span>
+                                        <span class="emp-meta">sanjay@company.com • <strong>Security Principal</strong></span>
+                                    </div>
+                                    <span class="badge-role-pill contr">SME</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- RIGHT COLUMN: LIGHTWEIGHT SUBMISSION QUEUE -->
+            <section class="admin-right-col">
+                <div class="panel upload-panel">
+                    <div class="panel-header">
+                        <span class="panel-title-text"><i class="fa-solid fa-clipboard-list icon-blue"></i> Ingestion Approval Queue</span>
+                    </div>
+                    <div class="panel-body-content">
+                        <div class="admin-queue-list" id="admin-approval-queue">
+                            <div class="log-placeholder">No pending submissions awaiting approval.</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
     <script src="app.js"></script>
 </body>
 </html>

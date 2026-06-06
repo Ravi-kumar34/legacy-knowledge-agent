@@ -1,184 +1,149 @@
+<<<<<<< HEAD
 // LegacyMind AI - Custom Premium Frontend Controller
 // Toggle this variable to true during the Hour 12 "Wire-Up" Sync
-const isIntegrated = true;
+const isIntegrated = false;
+=======
+// LegacyMind AI - Simplified Login Frontend Controller
+const isIntegrated = false;
+>>>>>>> c2825f2 (Refine login flow and knowledge contribution workflow)
 
-// Application State
-let activeMode = 'hindsight';
+// Application States
 let isQueryRunning = false;
+let activeRole = 'employee'; // employee | admin
+let isContributorVerified = false; // Tracks inline verification status
+let currentMainView = 'search'; // search | add
+let totalMemories = 12482;
 
-// Custom Mock Data for Hackathon Demo
+// Local Submissions Queue
+let pendingSubmissions = [];
+
+// Primary Mock Database for Hindsight Queries
 const mockDatabase = {
     'investigate payment-service': {
-        report: `=== ORGANIZATIONAL MEMORY REPORT ===
-
-[Query]: investigate payment-service
-[Status]: MEMORY_RESOLVED
-[System]: payment-service
-[Incident Ref]: Outage #483
-
-Historical Root Cause:
-The payment-service outages stem from a deferred remediation plan in April 2024. The circuit-breaker threshold was set too low under peak load, causing cascade failures when database connections timed out.
-
-Related Decisions & Events:
-* Jan 2024: Initial latency alert warnings.
-* Mar 2024: Service degradation incident resolved by cache clearing.
-* Apr 2024: Technical debt registered; fix deferred by engineering leadership.
+        sources: [
+            '✓ Incident #483',
+            '✓ Expert Note by Rahul',
+            '✓ Historical Resolution Record',
+            '✓ Architecture Decision Record (ADR #14)'
+        ],
+        confidence: '94%',
+        timelineText: `Jan 2024 -> Latency warning detected
+Feb 2024 -> Queue latency spike
+Mar 2024 -> Connection pool exhaustion
+Apr 2024 -> Technical debt fix deferred
+Jun 2024 -> Major outage incident`,
+        timelineNodes: [
+            { date: 'JAN 2024', text: 'Latency warning detected', type: 'warning' },
+            { date: 'MAR 2024', text: 'Connection pool exhaustion', type: 'error' },
+            { date: 'APR 2024', text: 'Technical debt fix deferred by leadership', type: 'warning' },
+            { date: 'JUN 2024', text: 'Major outage incident on checkout service', type: 'error' }
+        ],
+        answer: `The payment-service outages stem from a deferred remediation plan in April 2024. The circuit-breaker threshold was set too low under peak load, causing cascade failures when database connections timed out. 
 
 Expert Owner: Rahul (Lead Platform)
-Remediation: Optimize connection pool limits and bump circuit breaker cooldown window to 15s.
-
-Confidence: 94%`,
-        statusLogs: [
-            '⏳ Querying Legacy Knowledge Database...',
-            '✅ Found incident history for "payment-service"',
-            '✅ Found Architecture Decision Record (ADR #14)',
-            '🧠 Building causal graph with 4 incident nodes...',
-            '✅ Analysis synthesized'
-        ],
-        thinkingLogs: [
-            '> Evaluating dependency trees for microservice: payment-service',
-            '> Found related incident: INC-483 (October 2023)',
-            '> Matching commit: "Update connection pools" by team-payment',
-            '> Tracking: Circuit breaker threshold postponed in April triage',
-            '> Confidence level: 94%'
-        ],
-        timeline: [
-            { date: 'JAN 2024', text: 'Warning Signal: High response latency on checkout calls', type: 'warning' },
-            { date: 'MAR 2024', text: 'Service Degradation: Database connection pooling limit exhausted', type: 'error' },
-            { date: 'APR 2024', text: 'Deferred Remediation: Postponed circuit-breaker threshold optimization', type: 'warning' },
-            { date: 'JUN 2024', text: 'Major Outage: Cascade failure triggered by payment-service timeouts', type: 'error' }
-        ]
+Remediation Recommendation: Optimize connection pool limits and bump circuit breaker cooldown window to 15s.`
     },
     'recall incident-483': {
-        report: `=== ORGANIZATIONAL MEMORY REPORT ===
-
-[Query]: recall incident-483
-[Status]: POST_MORTEM_LOADED
-[Author]: Rahul (Lead SRE)
-[Date]: October 2023
-
-Incident Summary:
-Payment checkout outage lasting 45 minutes on checkout gateway.
-
-Root Cause:
-Circuit breaker misconfiguration. During peak traffic, checkout connection limit was hit, triggering a false-positive trip on the payment gateway circuit breaker.
-
-Action Taken:
-Resolved by Rahul by clearing the Redis cache to drop zombie sessions and bumping connection pooling max size to 150.
-
-Confidence: 98%`,
-        statusLogs: [
-            '⏳ Querying Legacy Knowledge Database...',
-            '✅ Located Incident ID #483 (Oct 2023)',
-            '✅ Found post-mortem report (Author: Rahul)',
-            '🧠 Recalling original RCA session logs...',
-            '✅ Response ready'
+        sources: [
+            '✓ Incident #483',
+            '✓ Expert Note by Rahul',
+            '✓ Historical Post-Mortem Report'
         ],
-        thinkingLogs: [
-            '> Locating event node: INCIDENT_483',
-            '> Cross-referencing root cause: Circuit breaker misconfiguration',
-            '> Indexing authors: Rahul (Lead Platform)',
-            '> Confidence level: 98%'
-        ],
-        timeline: [
-            { date: 'OCT 2023', text: 'Incident #483: Checkout outage lasting 45 minutes', type: 'error' },
-            { date: 'OCT 2023', text: 'RCA Published: Circuit breaker threshold mismatch details saved', type: 'success' },
+        confidence: '98%',
+        timelineText: `Oct 2023 -> Incident #483 occurred
+Oct 2023 -> RCA session published
+Nov 2023 -> Threshold alerting scripts deployed`,
+        timelineNodes: [
+            { date: 'OCT 2023', text: 'Incident #483: checkout outage lasting 45 minutes', type: 'error' },
+            { date: 'OCT 2023', text: 'RCA Published: Circuit breaker threshold mismatch detailed', type: 'success' },
             { date: 'NOV 2023', text: 'Action Item: Automated threshold alerting scripts deployed', type: 'success' }
-        ]
+        ],
+        answer: `Incident #483 occurred due to circuit breaker misconfiguration. During peak traffic, checkout connection limit was hit, triggering a false-positive trip on the payment gateway circuit breaker.
+
+Action Taken: Resolved by Rahul by clearing the Redis cache to drop zombie sessions and bumping connection pooling max size to 150.`
     },
     'why was kafka rejected': {
-        report: `=== ORGANIZATIONAL MEMORY REPORT ===
-
-[Query]: why was kafka rejected
-[Status]: ARCHITECTURE_DECISION_FOUND
-[Document]: ADR #27 (Message Broking)
-[Lead Architect]: Priya
-
-Decision Context:
-Kafka was formally rejected in favor of RabbitMQ / Redis Streams for async processing.
+        sources: [
+            '✓ Architecture Decision Record (ADR #27)',
+            '✓ Expert consultation notes by Priya'
+        ],
+        confidence: '92%',
+        timelineText: `Dec 2023 -> Proposal to introduce Kafka
+Jan 2024 -> Concern raised regarding ZooKeeper overhead
+Feb 2024 -> Kafka rejected; RabbitMQ selected`,
+        timelineNodes: [
+            { date: 'DEC 2023', text: 'Proposal: Introduce Kafka for transaction logging', type: 'success' },
+            { date: 'JAN 2024', text: 'Evaluation: Priya raised ZooKeeper overhead concerns', type: 'warning' },
+            { date: 'FEB 2024', text: 'Decision: Kafka rejected; RabbitMQ selected', type: 'success' }
+        ],
+        answer: `Kafka was formally rejected in favor of RabbitMQ / Redis Streams for async processing.
 
 Core Rejection Factors:
 1. Operational Complexity: DevOps team lacked dedicated Kafka engineers to monitor cluster states.
 2. Budget Constraints: Projected cluster sizing costs exceeded the allocation limit.
-3. Latency Requirements: High throughput of Kafka was not required; sub-millisecond queuing latency of RabbitMQ was preferred.
-
-Alternative Selected: RabbitMQ
-Confidence: 92%`,
-        statusLogs: [
-            '⏳ Querying Decision DNA Database...',
-            '✅ ADR #27 (Message Broking) retrieved',
-            '✅ Found expert consultation notes (Lead: Priya)',
-            '🧠 Synthesizing decision trade-offs...',
-            '✅ Explanation compiled'
-        ],
-        thinkingLogs: [
-            '> Parsing ADR records for "Kafka" and "Queue"',
-            '> Found rejection matrix: Maintenance overhead and operational complexity',
-            '> Selected alternative: RabbitMQ / Redis Streams',
-            '> Confidence level: 92%'
-        ],
-        timeline: [
-            { date: 'DEC 2023', text: 'Proposal: Introducing Kafka for transactional log streaming', type: 'success' },
-            { date: 'JAN 2024', text: 'Evaluation: Priya raised concerns regarding ZooKeeper/KRaft overhead', type: 'warning' },
-            { date: 'FEB 2024', text: 'Decision: Kafka rejected; RabbitMQ selected for simpler operations', type: 'success' }
-        ]
+3. Latency Requirements: High throughput of Kafka was not required; sub-millisecond queuing latency of RabbitMQ was preferred.`
     },
     'show expert payment-service': {
-        report: `=== ORGANIZATIONAL MEMORY REPORT ===
+        sources: [
+            '✓ Git blame logs for payment-service/',
+            '✓ Commit metadata index',
+            '✓ Resolution reports for payment-service'
+        ],
+        confidence: '96%',
+        timelineText: `Jun 2023 -> Initial codebase commit by Rahul
+Oct 2023 -> Outage RCA-483 resolved by Rahul
+May 2024 -> Database pooling refactoring by Priya`,
+        timelineNodes: [
+            { date: 'JUN 2023', text: 'Codebase initialized by Rahul', type: 'success' },
+            { date: 'OCT 2023', text: 'Incident 483 resolved by Rahul', type: 'error' },
+            { date: 'MAY 2024', text: 'Connection pool configuration committed by Priya', type: 'success' }
+        ],
+        answer: `Subject Matter Experts for payment-service:
 
-[Query]: show expert payment-service
-[Status]: REGISTRY_ACCESSED
-[Scope]: payment-service
-
-Chief Subject Matter Expert:
-Rahul (Lead SRE / Platform Engineer)
+Chief SME: Rahul (Lead SRE / Platform Engineer)
 * Profile: Initial codebase architect, author of RCA-483.
 * Contact: rahul@enterprise.com
 
-Secondary Expert:
-Priya (Lead Developer)
+Secondary SME: Priya (Lead Developer)
 * Profile: Configured connection pooling and RabbitMQ integrations.
-* Contact: priya@enterprise.com
-
-Confidence: 96%`,
-        statusLogs: [
-            '⏳ Querying Git Provenance & Incident Logs...',
-            '✅ Git blame logs parsed for payment-service/',
-            '✅ Most active incident authors found',
-            '🧠 Identifying chief institutional expert...',
-            '✅ Expert profiles ready'
-        ],
-        thinkingLogs: [
-            '> Fetching owner graph for payment-service',
-            '> Correlating commits with incident resolution logs',
-            '> Top contributor: Rahul (18 commits, 4 RCA tickets)',
-            '> Secondary contributor: Priya (10 commits)',
-            '> Confidence level: 96%'
-        ],
-        timeline: [
-            { date: 'JUN 2023', text: 'First Commit: Codebase initialized by Rahul', type: 'success' },
-            { date: 'OCT 2023', text: 'Incident 483: Resolved by Rahul', type: 'error' },
-            { date: 'MAY 2024', text: 'Major refactor: DB connection pooling written by Priya', type: 'success' }
-        ]
+* Contact: priya@enterprise.com`
     }
 };
 
-// Initialization
+// Initial setup
 document.addEventListener("DOMContentLoaded", () => {
     updateConnectionStatus();
 
-    // Hook enter key on input
-    const input = document.getElementById("query-input");
-    if (input) {
-        input.addEventListener("keydown", (e) => {
+    // Hook enter keys
+    const queryInput = document.getElementById("query-input");
+    if (queryInput) {
+        queryInput.addEventListener("keydown", (e) => {
             if (e.key === "Enter") {
                 sendQuery();
             }
         });
     }
+
+    const empPass = document.getElementById("emp-password");
+    if (empPass) {
+        empPass.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") attemptLogin('employee');
+        });
+    }
+
+    const adminPass = document.getElementById("admin-password");
+    if (adminPass) {
+        adminPass.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") attemptLogin('admin');
+        });
+    }
+
+    // Initialize stats on login view
+    const loginStats = document.getElementById("login-memories-stat");
+    if (loginStats) loginStats.textContent = totalMemories.toLocaleString();
 });
 
-// Update connection status visual based on integration configuration
+// Update connection status label
 function updateConnectionStatus() {
     const connStatus = document.getElementById("conn-status");
     if (!connStatus) return;
@@ -196,46 +161,254 @@ function updateConnectionStatus() {
         const dot = connStatus.parentNode.querySelector(".status-dot");
         if (dot) {
             dot.style.backgroundColor = "var(--accent-blue-light)";
-            dot.style.boxShadow = "0 0 8px var(--accent-blue-light)";
+            dot.style.boxShadow = "0 0 6px var(--accent-blue-light)";
         }
     }
 }
 
-// Select running mode (Goldfish, Basic RAG, Hindsight)
-function selectMode(mode) {
-    activeMode = mode;
+// Show/Hide Administrative Access pop-up dialog
+function showAdminModal(show) {
+    const empCard = document.getElementById("employee-login-card");
+    const adminModal = document.getElementById("admin-login-modal");
     
-    // Toggle active classes
-    document.querySelectorAll(".mode-btn").forEach(btn => btn.classList.remove("active"));
-    const activeBtn = document.getElementById(`mode-${mode}`);
-    if (activeBtn) activeBtn.classList.add("active");
+    // Clear passwords & errors
+    document.getElementById("admin-password").value = "";
+    const adminError = document.getElementById("admin-auth-error-msg");
+    if (adminError) adminError.style.display = "none";
 
-    // Dynamic explanation and incident count stats
-    const explanationText = document.getElementById("mode-explanation-text");
-    const incidentCount = document.getElementById("incident-count");
-    
-    if (mode === 'goldfish') {
-        explanationText.textContent = "Zero-shot memory configuration. The agent operates with no historical incident context or decision logs.";
-        if (incidentCount) incidentCount.textContent = "0";
-    } else if (mode === 'rag') {
-        explanationText.textContent = "Retrieves raw matching text blocks using vector similarity search. Lacks relational metadata or causal dependency mapping.";
-        if (incidentCount) incidentCount.textContent = "12";
+    if (show) {
+        empCard.style.display = "none";
+        adminModal.style.display = "block";
+        document.getElementById("admin-id").focus();
     } else {
-        explanationText.textContent = "Deep Hindsight Engine active. Reconstructs multi-month causal chains and links historical decisions to current incidents.";
-        if (incidentCount) incidentCount.textContent = "483";
+        adminModal.style.display = "none";
+        empCard.style.display = "block";
+        document.getElementById("emp-email").focus();
     }
 }
 
-// Execute query preset
-function runExample(commandText) {
-    const input = document.getElementById("query-input");
-    if (input) {
-        input.value = commandText;
-        sendQuery();
+// Perform client-side auth validation
+function attemptLogin(role) {
+    if (role === 'employee') {
+        const email = document.getElementById("emp-email").value.trim();
+        const pass = document.getElementById("emp-password").value;
+        const errorBlock = document.getElementById("auth-error-msg");
+
+        if (!email || !pass) {
+            showAuthError("Email and Password are required.");
+            return;
+        }
+        
+        activeRole = 'employee';
+        isContributorVerified = false; // Reset verification
+        
+        document.getElementById("session-role-badge").textContent = "EMPLOYEE";
+        document.getElementById("auth-overlay").style.display = "none";
+        document.getElementById("app-content").style.display = "flex";
+        
+        if (errorBlock) errorBlock.style.display = "none";
+        switchMainView('search');
+
+    } else if (role === 'admin') {
+        const adminId = document.getElementById("admin-id").value.trim();
+        const pass = document.getElementById("admin-password").value;
+        const errorBlock = document.getElementById("admin-auth-error-msg");
+
+        if (!adminId || !pass) {
+            showAdminAuthError("Admin ID and Password are required.");
+            return;
+        }
+
+        activeRole = 'admin';
+        document.getElementById("auth-overlay").style.display = "none";
+        document.getElementById("admin-dashboard").style.display = "flex";
+
+        if (errorBlock) errorBlock.style.display = "none";
+        updateAdminCounters();
+        renderAdminQueue();
     }
 }
 
-// Main Send Query Handler
+function showAuthError(msg) {
+    const errorBlock = document.getElementById("auth-error-msg");
+    const errorText = document.getElementById("error-text");
+    if (errorBlock && errorText) {
+        errorText.textContent = msg;
+        errorBlock.style.display = "flex";
+    }
+}
+
+function showAdminAuthError(msg) {
+    const errorBlock = document.getElementById("admin-auth-error-msg");
+    const errorText = document.getElementById("admin-error-text");
+    if (errorBlock && errorText) {
+        errorText.textContent = msg;
+        errorBlock.style.display = "flex";
+    }
+}
+
+// Logout session
+function logout() {
+    activeRole = 'employee';
+    isContributorVerified = false;
+
+    document.getElementById("app-content").style.display = "none";
+    document.getElementById("admin-dashboard").style.display = "none";
+    
+    // Reset passwords
+    document.getElementById("emp-password").value = "";
+    document.getElementById("admin-password").value = "";
+
+    showAdminModal(false); // Return to default employee card
+    document.getElementById("auth-overlay").style.display = "flex";
+}
+
+// Navigation switcher (Search vs Add Memory)
+function switchMainView(view) {
+    currentMainView = view;
+
+    const btnSearch = document.getElementById("btn-nav-search");
+    const btnAdd = document.getElementById("btn-nav-add");
+    if (btnSearch && btnAdd) {
+        btnSearch.classList.toggle("active", view === 'search');
+        btnAdd.classList.toggle("active", view === 'add');
+    }
+
+    const searchView = document.getElementById("terminal-search-view");
+    const ingestView = document.getElementById("terminal-ingest-view");
+    const examplesPanel = document.getElementById("examples-nav-panel");
+
+    if (view === 'search') {
+        if (searchView) searchView.style.display = "flex";
+        if (ingestView) ingestView.style.display = "none";
+        if (examplesPanel) examplesPanel.style.display = "block";
+        
+        setTimeout(() => {
+            const queryInput = document.getElementById("query-input");
+            if (queryInput) queryInput.focus();
+        }, 100);
+    } else {
+        if (searchView) searchView.style.display = "none";
+        if (ingestView) ingestView.style.display = "flex";
+        if (examplesPanel) examplesPanel.style.display = "none";
+
+        setupIngestPortalState();
+    }
+}
+
+// Set up Ingestion Portal inner view depending on session credentials
+function setupIngestPortalState() {
+    const authGate = document.getElementById("ingest-auth-gate");
+    const submitForm = document.getElementById("ingest-submit-form");
+    const feedbackLogs = document.getElementById("ingest-feedback-logs");
+
+    // Clear Ingestion fields
+    document.getElementById("ingest-emp-id").value = "EMP-Rahul";
+    document.getElementById("ingest-password").value = "rahulsecrethash";
+    document.getElementById("ingest-title").value = "Redis Cache Failure Resolution";
+    document.getElementById("ingest-entry").value = "";
+    document.getElementById("ingest-root-cause").value = "";
+    document.getElementById("ingest-action").value = "";
+    document.getElementById("ingest-auth-error").style.display = "none";
+
+    if (isContributorVerified) {
+        authGate.style.display = "none";
+        submitForm.style.display = "block";
+        feedbackLogs.style.display = "none";
+    } else {
+        authGate.style.display = "block";
+        submitForm.style.display = "none";
+        feedbackLogs.style.display = "none";
+    }
+}
+
+// Ingestion gate credentials verification (Inline authorization)
+function authenticateIngest() {
+    const empId = document.getElementById("ingest-emp-id").value.trim();
+    const pass = document.getElementById("ingest-password").value;
+    const errorBlock = document.getElementById("ingest-auth-error");
+
+    if (empId === "EMP-Rahul" && pass === "rahulsecrethash") {
+        // Mark as verified contributor for this session
+        isContributorVerified = true;
+        document.getElementById("session-role-badge").textContent = "CONTRIBUTOR (VERIFIED)";
+        
+        document.getElementById("ingest-auth-gate").style.display = "none";
+        document.getElementById("ingest-submit-form").style.display = "block";
+        if (errorBlock) errorBlock.style.display = "none";
+    } else {
+        if (errorBlock) errorBlock.style.display = "block";
+    }
+}
+
+// Form Submission workflow
+function submitToMemoryEngine() {
+    const title = document.getElementById("ingest-title").value.trim();
+    const entry = document.getElementById("ingest-entry").value.trim();
+    const root = document.getElementById("ingest-root-cause").value.trim();
+    const action = document.getElementById("ingest-action").value.trim();
+
+    if (!title || !entry || !root || !action) {
+        alert("All fields (Title, Entry, Root Cause, Recommendation) are required.");
+        return;
+    }
+
+    // Hide form, show logs
+    document.getElementById("ingest-submit-form").style.display = "none";
+    const feedbackBox = document.getElementById("ingest-feedback-logs");
+    feedbackBox.style.display = "block";
+
+    const listContainer = document.getElementById("feedback-checklist-container");
+    listContainer.innerHTML = "";
+    document.getElementById("feedback-success-actions").style.display = "none";
+
+    const feedbackLines = [
+        '[✓] Identity Verified',
+        '[✓] Contributor Permissions Confirmed',
+        '[✓] Knowledge Validated',
+        '[✓] Memory Indexed',
+        '[✓] Available For Future Retrieval'
+    ];
+
+    let currentLog = 0;
+    const runChecklistAnimation = () => {
+        if (currentLog < feedbackLines.length) {
+            const line = document.createElement("div");
+            line.className = "feedback-line";
+            line.textContent = feedbackLines[currentLog];
+            listContainer.appendChild(line);
+            
+            // Fades check in
+            setTimeout(() => {
+                line.classList.add("visible");
+                line.classList.add("success");
+            }, 50);
+
+            currentLog++;
+            setTimeout(runChecklistAnimation, 250);
+        } else {
+            // Done checklist, compile draft
+            const draft = {
+                title: title,
+                entry: entry,
+                rootCause: root,
+                action: action,
+                contributor: "Rahul Sharma",
+                email: "rahul@company.com",
+                date: new Date().toLocaleDateString(undefined, {month: 'short', day: 'numeric', year: 'numeric'})
+            };
+
+            pendingSubmissions.push(draft);
+            updateAdminCounters();
+            
+            document.getElementById("feedback-success-actions").style.display = "block";
+        }
+    };
+
+    runChecklistAnimation();
+}
+
+// Submit query command
 async function sendQuery() {
     if (isQueryRunning) return;
 
@@ -243,15 +416,13 @@ async function sendQuery() {
     const query = input.value.trim();
     if (!query) return;
 
-    // Set lock
     isQueryRunning = true;
     input.value = "";
     input.disabled = true;
 
-    // Reset diagnostic panels
     resetDiagnosticPanels();
 
-    // 1. Log query execution inside console window
+    // 1. Output command inside console
     addMessage(query, "user");
 
     // 2. Set stepper status
@@ -261,22 +432,19 @@ async function sendQuery() {
         pipelineStatus.style.color = "var(--accent-blue-light)";
     }
 
-    // Show inline command loading indicator inside terminal window
-    const loadingId = addMessage("Running memory resolution pipeline...", "loading");
+    const loadingId = addMessage("Analyzing Hindsight Database...", "loading");
 
-    // Get specific simulated data or fallback to generic
-    const cleanQuery = query.toLowerCase().replace(/^run\s+/, '');
+    // Check query keyword match (clean)
+    const cleanQuery = query.toLowerCase().replace(/^run\s+/, '').trim();
     const dataMatch = mockDatabase[cleanQuery];
 
-    // Build steps timeline sequence
+    // Pipeline steps sequence
     const totalSteps = 5;
     let currentStep = 1;
 
-    // Execute state steps sequence
     const runStepSequence = () => {
         return new Promise((resolve) => {
             const stepInterval = setInterval(() => {
-                // Deactivate previous step, activate current
                 document.querySelectorAll(".step-line").forEach(step => {
                     const stepNum = parseInt(step.getAttribute("data-step"));
                     if (stepNum < currentStep) {
@@ -288,85 +456,80 @@ async function sendQuery() {
                     }
                 });
 
-                // Add feed logs and thinking entries incrementally
-                logIncrementalDetails(currentStep, dataMatch, activeMode);
+                logIncrementalDetails(currentStep, dataMatch);
 
                 currentStep++;
                 if (currentStep > totalSteps + 1) {
                     clearInterval(stepInterval);
                     resolve();
                 }
-            }, 300); // 300ms per step
+            }, 250);
         });
     };
 
-    // Run pipeline sequence
     await runStepSequence();
-
-    // Remove console loading element
     removeMessage(loadingId);
 
     if (!isIntegrated) {
-        // Mock Mode response
+        // Mock Response mode
         setTimeout(() => {
-            let finalResponseText = "";
-            
-            if (activeMode === 'goldfish') {
-                finalResponseText = `=== ORGANIZATIONAL MEMORY REPORT ===
-[Query]: ${query}
-[Status]: DEGRADED
-[Warning]: Mode GOLDFISH is active. Institutional context skipped.
+            let finalReport = "";
 
-No historical context found. Memory pipeline skipped.
-Please consult engineers manually.
+            if (dataMatch) {
+                // Render custom report matching structural format
+                finalReport = `====================================
+ORGANIZATIONAL MEMORY REPORT
+============================
 
-Confidence: 5%`;
-                clearTimeline();
-            } else if (activeMode === 'rag') {
-                // RAG mode outputs partial report
-                if (dataMatch) {
-                    finalResponseText = `=== ORGANIZATIONAL MEMORY REPORT ===
-[Query]: ${query}
-[Status]: VECTOR_MATCH_ONLY
-[Warning]: Mode BASIC RAG is active. Causal links deferred.
+Query:
+${query}
 
-Retrieved context:
-${dataMatch.report.split('\n\n')[2] || 'No matching database snippets.'}
+Memory Sources:
+${dataMatch.sources.join('\n')}
 
-Confidence: 62%`;
-                    renderTimeline([{ date: 'TODAY', text: 'Vector matched incident snippet', type: 'warning' }]);
-                } else {
-                    finalResponseText = `=== ORGANIZATIONAL MEMORY REPORT ===
-[Query]: ${query}
-[Status]: NO_MATCH
-No similar vector documents found.
+Confidence:
+${dataMatch.confidence || '96%'}
 
-Confidence: 10%`;
-                    clearTimeline();
-                }
+Timeline:
+${dataMatch.timelineText}
+
+Answer:
+${dataMatch.answer}
+
+====================================`;
+                
+                renderTimeline(dataMatch.timelineNodes);
             } else {
-                // Hindsight Mode (Full memory)
-                if (dataMatch) {
-                    finalResponseText = dataMatch.report;
-                    renderTimeline(dataMatch.timeline);
-                } else {
-                    finalResponseText = `=== ORGANIZATIONAL MEMORY REPORT ===
-[Query]: ${query}
-[Status]: SUCCESS
-[Hindsight]: Deep scan complete. No critical incidents matched.
+                // Fallback custom query output
+                finalReport = `====================================
+ORGANIZATIONAL MEMORY REPORT
+============================
 
-Institutional memory is healthy. No deferred fixes found on this component path.
+Query:
+${query}
 
-Confidence: 99%`;
-                    clearTimeline();
-                }
+Memory Sources:
+✓ Dynamic Vector Index Scan
+✓ Knowledge Graph Index
+
+Confidence:
+99%
+
+Timeline:
+Today -> Query evaluated on index
+
+Answer:
+Hindsight memory analysis completed. No critical incident matches or deferred resolutions were flagged for this query. The corporate context is healthy.
+
+====================================`;
+                clearTimeline();
             }
 
-            addMessage(finalResponseText, "agent");
+            addMessage(finalReport, "agent");
             completePipeline(true);
-        }, 200);
+        }, 150);
     } else {
-        // Integrated Live API Call
+        // Hour 12: Integrated API Call
         try {
             updateConnectionStatus();
 
@@ -378,27 +541,40 @@ Confidence: 99%`;
             const data = await response.json();
             
             if (data.status === "success") {
-                let formattedAgentResponse = `=== ORGANIZATIONAL MEMORY REPORT ===
+                const toolsString = data.tools_used && data.tools_used.length > 0 
+                    ? data.tools_used.map(t => `✓ ${t}`).join('\n') 
+                    : '✓ search_hindsight';
 
-[Query]: ${query}
-[Status]: SUCCESS
-[Tools Fired]: ${data.tools_used.join(', ')}
+                let finalReport = `====================================
+ORGANIZATIONAL MEMORY REPORT
+============================
 
+Query:
+${query}
+
+Memory Sources:
+${toolsString}
+
+Confidence:
+96%
+
+Timeline:
+May 10 -> Redis issue detected
+May 11 -> Cache cleared
+Today -> Similar issue queried
+
+Answer:
 ${data.agent_response}
 
-Confidence: 96%`;
+====================================`;
+
+                addMessage(finalReport, "agent");
                 
-                addMessage(formattedAgentResponse, "agent");
-                
-                // Show a generic timeline if they use Hindsight mode
-                if (activeMode === 'hindsight') {
-                    renderTimeline([
-                        { date: 'MAY 10', text: 'Redis cache cleared to drop zombie sessions by Rahul', type: 'success' },
-                        { date: 'TODAY', text: 'Query evaluated: ' + query, type: 'success' }
-                    ]);
-                } else {
-                    clearTimeline();
-                }
+                renderTimeline([
+                    { date: 'MAY 10', text: 'Redis connection limit hit', type: 'error' },
+                    { date: 'MAY 11', text: 'Cache cleared, zombie sessions dropped', type: 'success' },
+                    { date: 'TODAY', text: 'Resolved query: ' + query, type: 'success' }
+                ]);
 
                 completePipeline(true);
             } else if (data.detail) {
@@ -416,95 +592,44 @@ Confidence: 96%`;
 }
 
 // Log status and thoughts step-by-step
-function logIncrementalDetails(step, match, mode) {
+function logIncrementalDetails(step, match) {
     const statusFeed = document.getElementById("status-feed-logs");
     const thinkingFeed = document.getElementById("thinking-logs");
     if (!statusFeed || !thinkingFeed) return;
 
-    // Clear placeholders on step 1
     if (step === 1) {
         statusFeed.innerHTML = "";
         thinkingFeed.innerHTML = "";
     }
 
-    if (mode === 'goldfish') {
-        if (step === 1) {
-            appendLog(statusFeed, '⏳ Querying Legacy Knowledge Database...', 'feed-item');
-            appendLog(thinkingFeed, '> Evaluating query input...', 'thought-item');
-        } else if (step === 2) {
-            appendLog(statusFeed, '⚠️ Warning: Goldfish mode is active. Memory recall is disabled.', 'feed-item');
-            appendLog(thinkingFeed, '> Bypassing memory index query...', 'thought-item');
-        } else if (step === 3) {
-            appendLog(statusFeed, '⚠️ Skipping expert ownership matching.', 'feed-item');
-            appendLog(thinkingFeed, '> Warning: 0-shot context activated.', 'thought-item');
-        } else if (step === 5) {
-            appendLog(statusFeed, '✅ Empty Response Prepared.', 'feed-item');
-            appendLog(thinkingFeed, '> Confidence score set to minimum.', 'thought-item');
-        }
-        return;
+    const thinkingLogs = [
+        '> Analyzing query',
+        '> Searching memory',
+        '> Building causal chain',
+        '> Retrieving incident history',
+        '> Generating response'
+    ];
+
+    let statusText = "";
+    if (step === 1) {
+        statusText = "⏳ Querying Legacy Knowledge Database...";
+    } else if (step === 2) {
+        statusText = match ? `✅ Found matching incidents` : "✅ Initialized index scanner";
+    } else if (step === 3) {
+        statusText = match ? `✅ Found Root Cause Analysis` : "✅ Fetched expert nodes";
+    } else if (step === 4) {
+        statusText = "🧠 Building Organizational Context...";
+    } else if (step === 5) {
+        statusText = "✅ Response Ready";
     }
 
-    if (mode === 'rag') {
-        if (step === 1) {
-            appendLog(statusFeed, '⏳ Querying Vector DB...', 'feed-item');
-            appendLog(thinkingFeed, '> Parsing user input for embeddings...', 'thought-item');
-        } else if (step === 2) {
-            appendLog(statusFeed, '✅ Vector search completed.', 'feed-item');
-            appendLog(thinkingFeed, '> Running cosine similarity match...', 'thought-item');
-        } else if (step === 3) {
-            appendLog(statusFeed, '✅ Located related context snippet.', 'feed-item');
-            appendLog(thinkingFeed, '> Extracted matching text context chunks.', 'thought-item');
-        } else if (step === 5) {
-            appendLog(statusFeed, '✅ Basic response synthesized.', 'feed-item');
-            appendLog(thinkingFeed, '> Prepared direct context injection.', 'thought-item');
-        }
-        return;
-    }
-
-    // Default Hindsight Mode Incremental Logs
-    if (match) {
-        // Specific command logs
-        const statusLogs = match.statusLogs;
-        const thinkingLogs = match.thinkingLogs;
-
-        if (step === 1) {
-            appendLog(statusFeed, statusLogs[0] || '⏳ Querying Legacy Knowledge Database...', 'feed-item');
-            appendLog(thinkingFeed, thinkingLogs[0] || '> Evaluating query...', 'thought-item');
-        } else if (step === 2) {
-            appendLog(statusFeed, statusLogs[1] || '✅ Database query completed.', 'feed-item');
-            appendLog(thinkingFeed, thinkingLogs[1] || '> Searching incident nodes...', 'thought-item');
-        } else if (step === 3) {
-            appendLog(statusFeed, statusLogs[2] || '✅ Expert knowledge resolved.', 'feed-item');
-            appendLog(thinkingFeed, thinkingLogs[2] || '> Cross-referencing ADR files...', 'thought-item');
-        } else if (step === 4) {
-            appendLog(statusFeed, statusLogs[3] || '✅ Causal links established.', 'feed-item');
-            appendLog(thinkingFeed, thinkingLogs[3] || '> Assembling event graph...', 'thought-item');
-        } else if (step === 5) {
-            appendLog(statusFeed, statusLogs[4] || '✅ Report compiled.', 'feed-item');
-            appendLog(thinkingFeed, thinkingLogs[4] || '> Formatting markdown report...', 'thought-item');
-        }
-    } else {
-        // Fallback logs for custom user queries in Hindsight mode
-        if (step === 1) {
-            appendLog(statusFeed, '⏳ Querying Legacy Knowledge Database...', 'feed-item');
-            appendLog(thinkingFeed, '> Analyzing query parameters...', 'thought-item');
-        } else if (step === 2) {
-            appendLog(statusFeed, '✅ Done: Incident History Scan', 'feed-item');
-            appendLog(thinkingFeed, '> Running token parser on database index...', 'thought-item');
-        } else if (step === 3) {
-            appendLog(statusFeed, '✅ Done: Expert Ownership Check', 'feed-item');
-            appendLog(thinkingFeed, '> No direct Git blame match found.', 'thought-item');
-        } else if (step === 4) {
-            appendLog(statusFeed, '🧠 Building Organizational Context...', 'feed-item');
-            appendLog(thinkingFeed, '> Extrapolating causal connections...', 'thought-item');
-        } else if (step === 5) {
-            appendLog(statusFeed, '✅ Response Ready', 'feed-item');
-            appendLog(thinkingFeed, '> Formatted generic incident logs successfully.', 'thought-item');
-        }
+    if (step <= 5) {
+        appendLog(statusFeed, statusText, 'feed-item');
+        appendLog(thinkingFeed, thinkingLogs[step - 1], 'thought-item');
     }
 }
 
-// Complete the pipeline execution state
+// Complete the pipeline state
 function completePipeline(success) {
     const pipelineStatus = document.getElementById("pipeline-status");
     if (pipelineStatus) {
@@ -517,14 +642,12 @@ function completePipeline(success) {
         }
     }
 
-    // Reset steps styles to green checkmarks on complete success
-    if (success && activeMode !== 'goldfish') {
+    if (success) {
         document.querySelectorAll(".step-line").forEach(step => {
             step.className = "step-line completed";
         });
     }
 
-    // Unlock input
     const input = document.getElementById("query-input");
     if (input) {
         input.disabled = false;
@@ -533,7 +656,7 @@ function completePipeline(success) {
     isQueryRunning = false;
 }
 
-// Helper: Append log line
+// Helpers for append
 function appendLog(parentEl, text, className) {
     const el = document.createElement("div");
     el.className = className;
@@ -542,59 +665,52 @@ function appendLog(parentEl, text, className) {
     parentEl.scrollTop = parentEl.scrollHeight;
 }
 
-// Helper: Reset diagnostic widgets
+// Reset diagnostic panels
 function resetDiagnosticPanels() {
-    // Pipeline steps
     document.querySelectorAll(".step-line").forEach(step => {
         step.className = "step-line pending";
     });
 
-    // Feeds
     const statusFeed = document.getElementById("status-feed-logs");
-    if (statusFeed) statusFeed.innerHTML = '<div class="log-placeholder">Pipeline initializing...</div>';
+    if (statusFeed) statusFeed.innerHTML = '<div class="log-placeholder">Initializing pipeline...</div>';
 
     const thinkingFeed = document.getElementById("thinking-logs");
     if (thinkingFeed) thinkingFeed.innerHTML = '<div class="log-placeholder">> Standby...</div>';
 
-    // Timeline
     const timeline = document.getElementById("memory-timeline");
-    if (timeline) timeline.innerHTML = '<div class="timeline-placeholder">Evaluating causal nodes...</div>';
+    if (timeline) timeline.innerHTML = '<div class="timeline-placeholder">Awaiting execution...</div>';
 }
 
-// Render timeline items dynamically
-function renderTimeline(timelineData) {
+// Render dynamic timeline UI
+function renderTimeline(nodes) {
     const container = document.getElementById("memory-timeline");
     if (!container) return;
 
     container.innerHTML = "";
-    
-    if (!timelineData || timelineData.length === 0) {
+    if (!nodes || nodes.length === 0) {
         clearTimeline();
         return;
     }
 
-    timelineData.forEach(item => {
+    nodes.forEach(item => {
         const node = document.createElement("div");
         node.className = `timeline-node ${item.type || 'success'}`;
-        
         node.innerHTML = `
             <div class="timeline-date">${item.date}</div>
             <div class="timeline-text">${item.text}</div>
         `;
-        
         container.appendChild(node);
     });
 }
 
-// Reset timeline UI
 function clearTimeline() {
     const container = document.getElementById("memory-timeline");
     if (container) {
-        container.innerHTML = '<div class="timeline-placeholder">No causal timeline loaded for current query context.</div>';
+        container.innerHTML = '<div class="timeline-placeholder">No timeline loaded.</div>';
     }
 }
 
-// Render message in terminal console body
+// Output message blocks in chatBox
 function addMessage(text, className) {
     const chatBox = document.getElementById("chat-box");
     if (!chatBox) return;
@@ -612,32 +728,24 @@ function addMessage(text, className) {
     } else if (className === "agent") {
         div.className = "message agent-response-block";
         
-        // Wrap output report headers nicely
         const lines = text.split("\n");
-        let formattedHtml = "";
-        let inReport = false;
+        let htmlContent = "";
         
         lines.forEach(line => {
-            if (line.startsWith("===") && line.endsWith("===")) {
-                formattedHtml += `<div class="report-header">${line.replace(/===/g, '').trim()}</div>`;
-                inReport = true;
-            } else if (line.trim().startsWith("*")) {
-                formattedHtml += `<div class="report-item" style="padding-left: 12px; margin-bottom: 2px;">• ${line.replace(/^\*\s*/, '')}</div>`;
-            } else if (line.trim().startsWith("1.") || line.trim().startsWith("2.") || line.trim().startsWith("3.")) {
-                formattedHtml += `<div class="report-item" style="padding-left: 12px; margin-bottom: 2px;">${line}</div>`;
-            } else if (line.trim().includes(":") && !line.trim().startsWith("http")) {
-                const parts = line.split(":");
-                const label = parts[0];
-                const content = parts.slice(1).join(":");
-                formattedHtml += `<div class="report-item"><strong>${label}:</strong>${content}</div>`;
-            } else if (line.trim() !== "") {
-                formattedHtml += `<div class="report-item">${line}</div>`;
+            if (line.startsWith("===") || line.startsWith("---") || line.startsWith("===")) {
+                htmlContent += `<div class="eng-report-line" style="color: var(--text-muted); opacity: 0.5;">${line}</div>`;
+            } else if (line.toUpperCase() === "ORGANIZATIONAL MEMORY REPORT") {
+                htmlContent += `<div class="eng-report-title">${line}</div>`;
+            } else if (line.endsWith(":") && (line.startsWith("Query") || line.startsWith("Memory Sources") || line.startsWith("Confidence") || line.startsWith("Timeline") || line.startsWith("Answer"))) {
+                htmlContent += `<div class="eng-report-section-header" style="margin-top: 6px;">${line}</div>`;
+            } else if (line.trim().startsWith("✓") || line.trim().startsWith("•") || line.trim().startsWith("*")) {
+                htmlContent += `<div class="eng-report-bullet" style="color: var(--accent-green);">${line}</div>`;
             } else {
-                formattedHtml += `<div style="height: 6px;"></div>`;
+                htmlContent += `<div class="eng-report-body-text">${line}</div>`;
             }
         });
         
-        div.innerHTML = formattedHtml;
+        div.innerHTML = htmlContent;
     } else if (className === "loading") {
         div.className = "message console-loading";
         div.innerHTML = `<i class="fa-solid fa-spinner"></i> <span>${text}</span>`;
@@ -651,8 +759,117 @@ function addMessage(text, className) {
     return id;
 }
 
-// Remove message element
 function removeMessage(id) {
     const el = document.getElementById(id);
     if (el) el.remove();
+}
+
+
+// --- ADMINISTRATIVE DASHBOARD CONTROLLERS (MOCK LIGHTWEIGHT QUEUE) ---
+
+function updateAdminCounters() {
+    const headerMemCount = document.getElementById("header-memories-count");
+    const adminMemCount = document.getElementById("admin-memories-count");
+    const adminPendingCount = document.getElementById("admin-pending-count");
+
+    if (headerMemCount) headerMemCount.textContent = totalMemories.toLocaleString();
+    if (adminMemCount) adminMemCount.textContent = totalMemories.toLocaleString();
+    if (adminPendingCount) adminPendingCount.textContent = pendingSubmissions.length;
+}
+
+// Render queue list admin
+function renderAdminQueue() {
+    const container = document.getElementById("admin-approval-queue");
+    if (!container) return;
+
+    container.innerHTML = "";
+
+    if (pendingSubmissions.length === 0) {
+        container.innerHTML = '<div class="log-placeholder">No pending submissions awaiting approval.</div>';
+        return;
+    }
+
+    pendingSubmissions.forEach((item, index) => {
+        const div = document.createElement("div");
+        div.className = "queue-item";
+        div.innerHTML = `
+            <div class="queue-title">${item.title}</div>
+            <div class="queue-meta">
+                <span><strong>By:</strong> ${item.contributor}</span>
+                <span><strong>Date:</strong> ${item.date}</span>
+            </div>
+            <div class="queue-body-preview"><strong>Root Cause:</strong> ${item.rootCause}</div>
+            <div class="queue-actions">
+                <button class="btn-queue-approve" onclick="approveSubmission(${index})">
+                    <i class="fa-solid fa-check"></i> Approve
+                </button>
+                <button class="btn-queue-reject" onclick="rejectSubmission(${index})">
+                    <i class="fa-solid fa-xmark"></i> Reject
+                </button>
+            </div>
+        `;
+        container.appendChild(div);
+    });
+}
+
+// Approve pending contribution
+function approveSubmission(index) {
+    const item = pendingSubmissions[index];
+    if (!item) return;
+
+    // Index newly submitted memory dynamically to close the loop!
+    const searchKey = item.title.toLowerCase().trim();
+    
+    mockDatabase[searchKey] = {
+        sources: [
+            '✓ Contributed Knowledge: Approved',
+            `✓ Expert Log by ${item.contributor}`,
+            '✓ Causal Memory Database'
+        ],
+        confidence: '95%',
+        timelineText: `${item.date} -> Knowledge Submitted & Approved`,
+        timelineNodes: [
+            { date: item.date.toUpperCase(), text: `Approved: ${item.title}`, type: 'success' },
+            { date: 'TODAY', text: 'Queried successfully', type: 'success' }
+        ],
+        answer: `[Institutional Knowledge Record]
+Title: ${item.title}
+Contributor: ${item.contributor} (${item.email})
+
+Knowledge context:
+${item.entry}
+
+Root Cause analysis:
+${item.rootCause}
+
+Remediation Action:
+${item.action}`
+    };
+
+    // Remove from queue
+    pendingSubmissions.splice(index, 1);
+
+    // Bump active index counter
+    totalMemories++;
+    
+    // Update login screen stats
+    const loginStats = document.getElementById("login-memories-stat");
+    if (loginStats) loginStats.textContent = totalMemories.toLocaleString();
+
+    updateAdminCounters();
+    renderAdminQueue();
+
+    alert(`SUCCESS: "${item.title}" approved and indexed.\nIt is now fully queryable in the Search Console.`);
+}
+
+// Reject pending contribution
+function rejectSubmission(index) {
+    const item = pendingSubmissions[index];
+    if (!item) return;
+
+    pendingSubmissions.splice(index, 1);
+    updateAdminCounters();
+    renderAdminQueue();
+
+    alert(`Submission rejected: "${item.title}"`);
 }
