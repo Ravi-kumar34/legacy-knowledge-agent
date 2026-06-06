@@ -26,3 +26,4 @@ google-antigravity
 pytest
 httpx
 pytest-asyncio
+groq

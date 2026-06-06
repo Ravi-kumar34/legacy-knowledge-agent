@@ -5,7 +5,7 @@ from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 
 # Custom Routers
-from app.api.routes import auth, incidents, documents, health
+from app.api.routes import auth, incidents, documents, health, ingestion, query
 
 # Custom Middleware
 from app.middleware.rate_limit import RateLimitMiddleware
@@ -30,10 +30,7 @@ app.add_middleware(RateLimitMiddleware)
 app.add_middleware(AuthStateMiddleware)
 
 # 4. CORS Protection Middleware
-origins = [
-    "http://localhost:3000",       # Local React development
-    "https://yourdomain.com",      # Production domain
-]
+origins = ["*"]
 
 app.add_middleware(
     CORSMiddleware,
@@ -57,3 +54,5 @@ app.include_router(health.router, prefix="/api/v1/health", tags=["Health Check"]
 app.include_router(auth.router, prefix="/api/v1/auth", tags=["Authentication"])
 app.include_router(incidents.router, prefix="/api/v1/incidents", tags=["Incidents"])
 app.include_router(documents.router, prefix="/api/v1/documents", tags=["Document Management"])
+app.include_router(ingestion.router, prefix="/api/v1/ingestion", tags=["Ingestion"])
+app.include_router(query.router, prefix="/api/v1/query", tags=["Query"])

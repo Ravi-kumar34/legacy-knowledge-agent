@@ -18,7 +18,7 @@ source venv/bin/activate
 
 # Step 2: Install dependencies
 echo "📥 Installing dependencies..."
-pip install -r requirements.txt
+pip install -r backend/requirements.txt
 
 # Step 3: Environment Variables setup
 if [ ! -f ".env" ]; then
@@ -33,4 +33,4 @@ fi
 echo "🌟 Starting FastAPI server from /backend silo..."
 echo "API will be available at http://127.0.0.1:8000"
 echo "------------------------------------------------------"
-uvicorn backend.main:app --reload
+uvicorn app.main:app --app-dir backend --reload

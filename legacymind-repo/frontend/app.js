@@ -1,6 +1,6 @@
 // LegacyMind AI - Custom Premium Frontend Controller
 // Toggle this variable to true during the Hour 12 "Wire-Up" Sync
-const isIntegrated = false;
+const isIntegrated = true;
 
 // Application State
 let activeMode = 'hindsight';
@@ -370,7 +370,7 @@ Confidence: 99%`;
         try {
             updateConnectionStatus();
 
-            const response = await fetch("http://localhost:8000/query", {
+            const response = await fetch("http://localhost:8000/api/v1/query", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ user_query: query })
@@ -401,6 +401,9 @@ Confidence: 96%`;
                 }
 
                 completePipeline(true);
+            } else if (data.detail) {
+                addMessage("Backend Error: " + data.detail, "agent");
+                completePipeline(false);
             } else {
                 addMessage("Error: Agent returned a failure status.", "agent");
                 completePipeline(false);
