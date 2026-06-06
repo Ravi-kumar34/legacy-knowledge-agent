@@ -3,20 +3,206 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LegacyMind AI</title>
+    <title>LegacyMind AI - Organizational Memory Console</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="chat-container">
-        <h1>LegacyMind AI 🧠</h1>
-        <div class="status-bar">Status: <span id="conn-status">Working in Silo (Mock Data)</span></div>
-        <div id="chat-box">
-            <div class="message system">Welcome to LegacyMind AI. How can I help you find past decisions?</div>
-        </div>
-        <div class="input-area">
-            <input type="text" id="query-input" placeholder="e.g. How do I fix Database Error 405?">
-            <button onclick="sendQuery()">Ask Hindsight</button>
-        </div>
+    <div class="console-wrapper">
+        <!-- TOP HEADER -->
+        <header class="top-header">
+            <div class="header-left">
+                <div class="logo-container">
+                    <i class="fa-solid fa-terminal logo-icon"></i>
+                    <div class="logo-text">
+                        <h1>LEGACYMIND AI</h1>
+                        <span class="logo-subtitle">Enterprise Organizational Memory System</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="header-right">
+                <div class="stat-badge">
+                    <span class="stat-label">MEMORIES INDEXED</span>
+                    <span class="stat-val">12,482</span>
+                </div>
+                <div class="stat-badge">
+                    <span class="stat-label">INCIDENTS TRACKED</span>
+                    <span class="stat-val" id="incident-count">483</span>
+                </div>
+                <div class="stat-badge">
+                    <span class="stat-label">KNOWLEDGE GRAPH</span>
+                    <span class="stat-val text-success">HEALTHY</span>
+                </div>
+                <div class="status-indicator">
+                    <span class="status-dot"></span>
+                    <span id="conn-status" class="status-text">ONLINE</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- MAIN LAYOUT GRID -->
+        <main class="console-grid">
+            
+            <!-- LEFT COLUMN: COMMAND PANEL & MODE COMPARE -->
+            <section class="console-left-column">
+                
+                <!-- MODE COMPARISON SELECTOR -->
+                <div class="panel mode-selector-panel">
+                    <div class="panel-header-simple">
+                        <span class="panel-tag">MODE CONFIGURATION</span>
+                    </div>
+                    <div class="mode-options">
+                        <button class="mode-btn" id="mode-goldfish" onclick="selectMode('goldfish')">
+                            <span class="radio-dot"></span>
+                            <span class="mode-name">Goldfish</span>
+                            <span class="mode-desc">0-shot (No memory)</span>
+                        </button>
+                        <button class="mode-btn" id="mode-rag" onclick="selectMode('rag')">
+                            <span class="radio-dot"></span>
+                            <span class="mode-name">Basic RAG</span>
+                            <span class="mode-desc">Vector Search Only</span>
+                        </button>
+                        <button class="mode-btn active" id="mode-hindsight" onclick="selectMode('hindsight')">
+                            <span class="radio-dot"></span>
+                            <span class="mode-name">Hindsight</span>
+                            <span class="mode-desc">Full Causal Recall</span>
+                        </button>
+                    </div>
+                    <div class="mode-explanation" id="mode-explanation-text">
+                        Deep Hindsight Engine active. Reconstructs multi-month causal chains and links historical decisions to current incidents.
+                    </div>
+                </div>
+
+                <!-- MAIN TERMINAL WINDOW -->
+                <div class="panel terminal-panel">
+                    <div class="terminal-window-header">
+                        <div class="terminal-dots">
+                            <span class="dot red"></span>
+                            <span class="dot yellow"></span>
+                            <span class="dot green"></span>
+                        </div>
+                        <span class="terminal-title">legacymind@enterprise: ~</span>
+                        <div class="terminal-actions">
+                            <i class="fa-solid fa-expand"></i>
+                        </div>
+                    </div>
+                    
+                    <!-- CONSOLE CHAT HISTORY CONTAINER -->
+                    <div id="chat-box" class="terminal-body">
+                        <div class="message system">Welcome to LegacyMind Enterprise Organizational Memory Console.
+System status: ONLINE. Hindsight engine initialized.
+Type a command or click an example below to begin query.</div>
+                    </div>
+
+                    <!-- TERMINAL INPUT LINE -->
+                    <div class="terminal-input-bar">
+                        <span class="terminal-prompt-symbol">legacymind@enterprise:~$</span>
+                        <input type="text" id="query-input" placeholder="Enter memory query command..." autofocus autocomplete="off">
+                        <button class="btn-execute" onclick="sendQuery()">
+                            <i class="fa-solid fa-play"></i> Execute
+                        </button>
+                    </div>
+                </div>
+
+                <!-- EXAMPLE COMMANDS PANEL -->
+                <div class="panel examples-panel">
+                    <div class="panel-header-simple">
+                        <span class="panel-tag">AVAILABLE COMMAND TEMPLATES</span>
+                    </div>
+                    <div class="example-tags">
+                        <button class="example-tag-btn" onclick="runExample('investigate payment-service')">
+                            <span class="cmd-prefix">run</span> investigate payment-service
+                        </button>
+                        <button class="example-tag-btn" onclick="runExample('recall incident-483')">
+                            <span class="cmd-prefix">run</span> recall incident-483
+                        </button>
+                        <button class="example-tag-btn" onclick="runExample('why was kafka rejected')">
+                            <span class="cmd-prefix">run</span> why was kafka rejected
+                        </button>
+                        <button class="example-tag-btn" onclick="runExample('show expert payment-service')">
+                            <span class="cmd-prefix">run</span> show expert payment-service
+                        </button>
+                    </div>
+                </div>
+
+            </section>
+
+            <!-- RIGHT COLUMN: DIAGNOSTIC & TIMELINE PANELS -->
+            <section class="console-right-column">
+                
+                <!-- TOOL EXECUTION PANEL -->
+                <div class="panel tool-execution-panel">
+                    <div class="panel-header">
+                        <span class="panel-title-text"><i class="fa-solid fa-gears icon-blue"></i> Tool Execution Pipeline</span>
+                        <span class="panel-header-status" id="pipeline-status">Idle</span>
+                    </div>
+                    <div class="panel-body-content">
+                        <div class="execution-steps" id="tool-execution-steps">
+                            <div class="step-line" data-step="1">
+                                <span class="step-num">[1/5]</span>
+                                <span class="step-text">Connecting to Memory Engine...</span>
+                            </div>
+                            <div class="step-line" data-step="2">
+                                <span class="step-num">[2/5]</span>
+                                <span class="step-text">Searching Incident History...</span>
+                            </div>
+                            <div class="step-line" data-step="3">
+                                <span class="step-num">[3/5]</span>
+                                <span class="step-text">Retrieving Expert Knowledge...</span>
+                            </div>
+                            <div class="step-line" data-step="4">
+                                <span class="step-num">[4/5]</span>
+                                <span class="step-text">Building Causal Timeline...</span>
+                            </div>
+                            <div class="step-line" data-step="5">
+                                <span class="step-num">[5/5]</span>
+                                <span class="step-text">Synthesizing Findings...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MEMORY STATUS FEED -->
+                <div class="panel status-feed-panel">
+                    <div class="panel-header">
+                        <span class="panel-title-text"><i class="fa-solid fa-database icon-blue"></i> Memory Status Feed</span>
+                    </div>
+                    <div class="panel-body-content log-container" id="status-feed-logs">
+                        <div class="log-placeholder">Pipeline inactive. Waiting for command execution...</div>
+                    </div>
+                </div>
+
+                <!-- THINKING LOG PANEL -->
+                <div class="panel thinking-log-panel">
+                    <div class="panel-header">
+                        <span class="panel-title-text"><i class="fa-solid fa-microchip icon-blue"></i> Thinking Log Panel</span>
+                    </div>
+                    <div class="panel-body-content log-container code-font" id="thinking-logs">
+                        <div class="log-placeholder">> Console standby. Query routing logs will stream here...</div>
+                    </div>
+                </div>
+
+                <!-- MEMORY TIMELINE PANEL -->
+                <div class="panel timeline-panel">
+                    <div class="panel-header">
+                        <span class="panel-title-text"><i class="fa-solid fa-clock-rotate-left icon-blue"></i> Memory Timeline Panel</span>
+                    </div>
+                    <div class="panel-body-content">
+                        <div class="timeline-flow" id="memory-timeline">
+                            <div class="timeline-placeholder">No causal timeline loaded for current query context.</div>
+                        </div>
+                    </div>
+                </div>
+
+            </section>
+
+        </main>
     </div>
     <script src="app.js"></script>
 </body>
