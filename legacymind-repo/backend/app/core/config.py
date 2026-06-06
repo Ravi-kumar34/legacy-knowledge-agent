@@ -18,7 +18,7 @@ class Settings(BaseSettings):
 
     # API Keys (Added to allow Pydantic validation)
     HINDSIGHT_API_KEY: str
-    ANTIGRAVITY_API_KEY: str
+    GROQ_API_KEY: str
 
     class Config:
         env_file = ".env"
