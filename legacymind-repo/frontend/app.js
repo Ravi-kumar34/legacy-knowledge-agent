@@ -165,7 +165,7 @@ function updateConnectionStatus() {
 function showAdminModal(show) {
     const empCard = document.getElementById("employee-login-card");
     const adminModal = document.getElementById("admin-login-modal");
-    
+
     // Clear passwords & errors
     document.getElementById("admin-password").value = "";
     const adminError = document.getElementById("admin-auth-error-msg");
@@ -193,14 +193,14 @@ function attemptLogin(role) {
             showAuthError("Email and Password are required.");
             return;
         }
-        
+
         activeRole = 'employee';
         isContributorVerified = false; // Reset verification
-        
+
         document.getElementById("session-role-badge").textContent = "EMPLOYEE";
         document.getElementById("auth-overlay").style.display = "none";
         document.getElementById("app-content").style.display = "flex";
-        
+
         if (errorBlock) errorBlock.style.display = "none";
         switchMainView('search');
 
@@ -249,7 +249,7 @@ function logout() {
 
     document.getElementById("app-content").style.display = "none";
     document.getElementById("admin-dashboard").style.display = "none";
-    
+
     // Reset passwords
     document.getElementById("emp-password").value = "";
     document.getElementById("admin-password").value = "";
@@ -277,7 +277,7 @@ function switchMainView(view) {
         if (searchView) searchView.style.display = "flex";
         if (ingestView) ingestView.style.display = "none";
         if (examplesPanel) examplesPanel.style.display = "block";
-        
+
         setTimeout(() => {
             const queryInput = document.getElementById("query-input");
             if (queryInput) queryInput.focus();
@@ -327,7 +327,7 @@ function authenticateIngest() {
         // Mark as verified contributor for this session
         isContributorVerified = true;
         document.getElementById("session-role-badge").textContent = "CONTRIBUTOR (VERIFIED)";
-        
+
         document.getElementById("ingest-auth-gate").style.display = "none";
         document.getElementById("ingest-submit-form").style.display = "block";
         if (errorBlock) errorBlock.style.display = "none";
@@ -365,41 +365,41 @@ async function submitToMemoryEngine() {
     ];
 
     let currentLog = 0;
-    
+
     // Animate first 3 steps
     for (let i = 0; i < 3; i++) {
         const line = document.createElement("div");
         line.className = "feedback-line";
         line.textContent = feedbackLines[i];
         listContainer.appendChild(line);
-        
+
         setTimeout(() => {
             line.classList.add("visible");
             line.classList.add("success");
         }, 50);
-        
+
         // Wait 250ms between lines
         await new Promise(r => setTimeout(r, 250));
     }
 
     try {
         const rawPayload = `Title: ${title}\nEntry: ${entry}\nRoot Cause: ${root}\nAction: ${action}`;
-        
+
         const response = await fetch("http://localhost:8000/api/v1/ingestion/teach/transform", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ raw_text: rawPayload, source_type: "portal_ui" })
         });
-        
+
         const data = await response.json();
-        
+
         const line = document.createElement("div");
         line.className = "feedback-line visible";
-        
+
         if (data.status === "success") {
             line.textContent = feedbackLines[3];
             line.classList.add("success");
-            
+
             // Add to mock admin queue just for visual flair
             const draft = {
                 title: title,
@@ -408,7 +408,7 @@ async function submitToMemoryEngine() {
                 action: action,
                 contributor: "Rahul Sharma",
                 email: "rahul@company.com",
-                date: new Date().toLocaleDateString(undefined, {month: 'short', day: 'numeric', year: 'numeric'})
+                date: new Date().toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
             };
             pendingSubmissions.push(draft);
             updateAdminCounters();
@@ -416,9 +416,9 @@ async function submitToMemoryEngine() {
             line.textContent = "[!] API Error: " + (data.detail || "Failed to save memory.");
             line.style.color = "var(--accent-red)";
         }
-        
+
         listContainer.appendChild(line);
-        
+
     } catch (err) {
         const line = document.createElement("div");
         line.className = "feedback-line visible";
@@ -426,7 +426,7 @@ async function submitToMemoryEngine() {
         line.textContent = "[!] Network Error: Could not reach backend API.";
         listContainer.appendChild(line);
     }
-    
+
     document.getElementById("feedback-success-actions").style.display = "block";
 }
 
@@ -519,7 +519,7 @@ Answer:
 ${dataMatch.answer}
 
 ====================================`;
-                
+
                 renderTimeline(dataMatch.timelineNodes);
             } else {
                 // Fallback custom query output
@@ -561,10 +561,10 @@ Hindsight memory analysis completed. No critical incident matches or deferred re
                 body: JSON.stringify({ user_query: query })
             });
             const data = await response.json();
-            
+
             if (data.status === "success") {
-                const toolsString = data.tools_used && data.tools_used.length > 0 
-                    ? data.tools_used.map(t => `✓ ${t}`).join('\n') 
+                const toolsString = data.tools_used && data.tools_used.length > 0
+                    ? data.tools_used.map(t => `✓ ${t}`).join('\n')
                     : '✓ search_hindsight';
 
                 let finalReport = `====================================
@@ -591,7 +591,7 @@ ${data.agent_response}
 ====================================`;
 
                 addMessage(finalReport, "agent");
-                
+
                 renderTimeline([
                     { date: 'MAY 10', text: 'Redis connection limit hit', type: 'error' },
                     { date: 'MAY 11', text: 'Cache cleared, zombie sessions dropped', type: 'success' },
@@ -749,10 +749,10 @@ function addMessage(text, className) {
         `;
     } else if (className === "agent") {
         div.className = "message agent-response-block";
-        
+
         const lines = text.split("\n");
         let htmlContent = "";
-        
+
         lines.forEach(line => {
             if (line.startsWith("===") || line.startsWith("---") || line.startsWith("===")) {
                 htmlContent += `<div class="eng-report-line" style="color: var(--text-muted); opacity: 0.5;">${line}</div>`;
@@ -766,7 +766,7 @@ function addMessage(text, className) {
                 htmlContent += `<div class="eng-report-body-text">${line}</div>`;
             }
         });
-        
+
         div.innerHTML = htmlContent;
     } else if (className === "loading") {
         div.className = "message console-loading";
@@ -841,7 +841,7 @@ function approveSubmission(index) {
 
     // Index newly submitted memory dynamically to close the loop!
     const searchKey = item.title.toLowerCase().trim();
-    
+
     mockDatabase[searchKey] = {
         sources: [
             '✓ Contributed Knowledge: Approved',
@@ -873,7 +873,7 @@ ${item.action}`
 
     // Bump active index counter
     totalMemories++;
-    
+
     // Update login screen stats
     const loginStats = document.getElementById("login-memories-stat");
     if (loginStats) loginStats.textContent = totalMemories.toLocaleString();
