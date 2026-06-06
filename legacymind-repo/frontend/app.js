@@ -1,11 +1,6 @@
-<<<<<<< HEAD
-// LegacyMind AI - Custom Premium Frontend Controller
-// Toggle this variable to true during the Hour 12 "Wire-Up" Sync
-const isIntegrated = false;
-=======
-// LegacyMind AI - Simplified Login Frontend Controller
-const isIntegrated = false;
->>>>>>> c2825f2 (Refine login flow and knowledge contribution workflow)
+// LegacyMind AI - Enterprise Frontend Controller
+// Toggle this variable to true to enable live backend integration
+const isIntegrated = true;
 
 // Application States
 let isQueryRunning = false;
@@ -342,7 +337,7 @@ function authenticateIngest() {
 }
 
 // Form Submission workflow
-function submitToMemoryEngine() {
+async function submitToMemoryEngine() {
     const title = document.getElementById("ingest-title").value.trim();
     const entry = document.getElementById("ingest-entry").value.trim();
     const root = document.getElementById("ingest-root-cause").value.trim();
@@ -365,29 +360,47 @@ function submitToMemoryEngine() {
     const feedbackLines = [
         '[✓] Identity Verified',
         '[✓] Contributor Permissions Confirmed',
-        '[✓] Knowledge Validated',
-        '[✓] Memory Indexed',
-        '[✓] Available For Future Retrieval'
+        '[✓] Compiling Payload & Requesting Transform...',
+        '[✓] Memory Successfully Indexed in Hindsight'
     ];
 
     let currentLog = 0;
-    const runChecklistAnimation = () => {
-        if (currentLog < feedbackLines.length) {
-            const line = document.createElement("div");
-            line.className = "feedback-line";
-            line.textContent = feedbackLines[currentLog];
-            listContainer.appendChild(line);
-            
-            // Fades check in
-            setTimeout(() => {
-                line.classList.add("visible");
-                line.classList.add("success");
-            }, 50);
+    
+    // Animate first 3 steps
+    for (let i = 0; i < 3; i++) {
+        const line = document.createElement("div");
+        line.className = "feedback-line";
+        line.textContent = feedbackLines[i];
+        listContainer.appendChild(line);
+        
+        setTimeout(() => {
+            line.classList.add("visible");
+            line.classList.add("success");
+        }, 50);
+        
+        // Wait 250ms between lines
+        await new Promise(r => setTimeout(r, 250));
+    }
 
-            currentLog++;
-            setTimeout(runChecklistAnimation, 250);
-        } else {
-            // Done checklist, compile draft
+    try {
+        const rawPayload = `Title: ${title}\nEntry: ${entry}\nRoot Cause: ${root}\nAction: ${action}`;
+        
+        const response = await fetch("http://localhost:8000/api/v1/ingestion/teach/transform", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ raw_text: rawPayload, source_type: "portal_ui" })
+        });
+        
+        const data = await response.json();
+        
+        const line = document.createElement("div");
+        line.className = "feedback-line visible";
+        
+        if (data.status === "success") {
+            line.textContent = feedbackLines[3];
+            line.classList.add("success");
+            
+            // Add to mock admin queue just for visual flair
             const draft = {
                 title: title,
                 entry: entry,
@@ -397,15 +410,24 @@ function submitToMemoryEngine() {
                 email: "rahul@company.com",
                 date: new Date().toLocaleDateString(undefined, {month: 'short', day: 'numeric', year: 'numeric'})
             };
-
             pendingSubmissions.push(draft);
             updateAdminCounters();
-            
-            document.getElementById("feedback-success-actions").style.display = "block";
+        } else {
+            line.textContent = "[!] API Error: " + (data.detail || "Failed to save memory.");
+            line.style.color = "var(--accent-red)";
         }
-    };
-
-    runChecklistAnimation();
+        
+        listContainer.appendChild(line);
+        
+    } catch (err) {
+        const line = document.createElement("div");
+        line.className = "feedback-line visible";
+        line.style.color = "var(--accent-red)";
+        line.textContent = "[!] Network Error: Could not reach backend API.";
+        listContainer.appendChild(line);
+    }
+    
+    document.getElementById("feedback-success-actions").style.display = "block";
 }
 
 // Submit query command
